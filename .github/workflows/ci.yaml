@@ -1,0 +1,17 @@
+---
+name: Review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  review:
+    name: Review
+    uses: ./.github/workflows/main.yaml
+    secrets: inherit
+    with:
+      check_commits: false
+      check_policy: true
+      policy_source: https://github.com/appvia/terranetes-workflows
+      policy_version: ''
