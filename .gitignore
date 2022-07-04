@@ -33,3 +33,6 @@ override.tf.json
 .terraformrc
 .terraform.lock.hcl
 terraform.rc
+
+# Checkov
+.external_modules

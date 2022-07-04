@@ -30,6 +30,7 @@ verify:
 	@docker run --rm -t \
 		-v ${PWD}:/workspace \
 		-w /tf bridgecrew/checkov \
+		--download-external-modules true \
 		--directory /workspace \
 		--framework terraform
 
