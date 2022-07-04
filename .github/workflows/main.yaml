@@ -1,30 +1,25 @@
 ---
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 name: Pipeline
 
 on:
-  workflow_call:
-    inputs:
-      check_commits:
-        description: Ensures all commit messages must pass linting checks
-        default: false
-        required: true
-        type: boolean
-      check_policy:
-        description: Should policy checks be enforced.
-        default: true
-        required: true
-        type: boolean
-      policy_source:
-        description: |
-          Reference to an external repository contains the security policy.
-        default: ''
-        required: false
-        type: string
-      policy_version:
-        description: The tag to checkout in the external policy repository.
-        default: ''
-        required: false
-        type: string
+  push:
+    branches: [main, master]
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 jobs:
   code-linting:
@@ -84,51 +79,68 @@ jobs:
   code-docs:
     name: Terraform Docs
     runs-on: ubuntu-latest
-    continue-on-error: true
     outputs:
       docs: ${{ steps.docs.outcome }}
+    env:
+      RELEASE: https://github.com/terraform-docs/terraform-docs/releases/download
+      VERSION: v0.16.0
     steps:
       - name: Clone repo
         uses: actions/checkout@v3
+      - name: Install Terraform Documentation CLI
+        run: |
+          curl -sL ${{ env.RELEASE }}/${{ env.VERSION }}/terraform-docs-${{ env.VERSION }}-$(uname)-amd64.tar.gz -o cli.tar.gz
+          tar -xzf cli.tar.gz
+          chmod +x terraform-docs
+          mv terraform-docs /usr/local/bin/terraform-docs
       - name: Generate Documentation
+        run: |
+          /usr/local/bin/terraform-docs markdown table \
+            --output-check \
+            --output-mode inject .
+      - name: Ensure Documentation
         id: docs
-        uses: terraform-docs/gh-actions@v1
-        with:
-          output-file: README.md
-          output-method: inject
+        run: |
+          if ! git status | grep -q README; then
+            echo "Ensure documentation is up to date $ make docs"
+          fi
 
   code-security:
     name: Security Check
     runs-on: ubuntu-latest
     outputs:
       security: ${{ steps.security.outcome }}
+    env:
+      # Change this reference to link to you organizations policies
+      # repository
+      POLICY_SOURCE: ""
+      # Change this reference to link to the policy tag
+      POLICY_VERSION: ""
     steps:
       - name: Clone repo
         uses: actions/checkout@v3
-      - name: Cloning Security Policy
-        if: inputs.policy_source != ''
+      - name: Cloning Organizational Policies
+        if: "${{ env.POLICY_SOURCE != '' }}"
         uses: actions/checkout@v3
         with:
-          repository: ${{ inputs.policy_source }}
+          repository: ${{ env.POLICY_SOURCE }}
           token: ${{ secrets.policy_token }}
           path: policy/
-      - name: Checkov Config
-        if: inputs.policy_source == ''
-        run: |
-          mkdir -p policy
-          echo "framework: terraform" > policy/config.yaml
-      - name: Using Latest Policy
-        if: inputs.policy_source != '' && inputs.policy_version != 'latest'
+      - name: Checkout Organizational Version
+        if: "${{ env.POLICY_SOURCE != '' && env.POLICY_VERSION != '' }}"
         run: |
           cd policy
           latest=$(git describe --tags --abbrev=0)
           git checkout $latest
+      - name: Checkov Configuration
+        run: |
+          if [[ -f policy/checkov.yaml ]]; then
+            cp policy/checkov.yaml .checkov.yaml
+          fi
       - name: Running Checkov
-        if: inputs.check_policy == true
         id: security
         uses: bridgecrewio/checkov-action@master
         with:
-          config_file: ./policy/config.yaml
           framework: terraform
 
   cost-token:
@@ -204,19 +216,24 @@ jobs:
   code-commits:
     name: Lint Code Commits
     runs-on: ubuntu-latest
-    if: inputs.check_commits == true
+    env:
+      ENABLE_COMMIT_LINTING: "false"
     steps:
       - name: Clone repo
+        if: "${{ env.ENABLE_COMMIT_LINTING == 'true' }}"
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v5
+      - name: Checking Commits
+        if: "${{ env.ENABLE_COMMIT_LINTING == 'true' }}"
+        uses: wagoid/commitlint-github-action@v5
 
   review:
     name: Update Review
     if: github.event_name == 'pull_request' && always()
     runs-on: ubuntu-latest
     needs:
+      - code-commits
       - code-costs
       - code-docs
       - code-format
