@@ -16,41 +16,46 @@ NAME=terranetes-workflows
 PWD=$(shell pwd)
 UID=$(shell id -u)
 
-.PHONY: test validate format docs
+.PHONY: test clean docs verify-docs verify-security verify-terraform verify-format
 
-test:
+test: act
 	@echo "--> Testing the module"
-	@$(MAKE) validate
-	@$(MAKE) format
-	@$(MAKE) verify
-	@$(MAKE) docs
-
-verify:
-	@echo "--> Verifying against security policies"
-	@docker run --rm -t \
-		-v ${PWD}:/workspace \
-		-w /tf bridgecrew/checkov \
-		--download-external-modules true \
-		--directory /workspace \
-		--framework terraform
+	@$(MAKE) verify-module
+	@$(MAKE) verify-format
+	@$(MAKE) verify-security
 
 docs:
-	@echo "--> Generating documentation"
-	docker run --rm -t \
+	@echo "--> Generating the documentation"
+	@docker run --rm -t \
 		-u ${UID} \
 		-v ${PWD}:/workspace \
 		-w /workspace \
 		quay.io/terraform-docs/terraform-docs:0.16.0 \
-		markdown document --output-file README.md --output-mode inject .
-
-validate:
-	@echo "--> Validating terraform module"
-	@terraform init
-	@terraform validate
+		markdown table --output-file README.md --output-mode inject .
 
 format:
 	@echo "--> Formatting terraform module"
 	@terraform fmt
+
+verify-security:
+	@echo "--> Verifying against security policies"
+	@act -j code-security
+
+verify-docs:
+	@echo "--> Generating documentation"
+	@act -j code-docs pull_request
+
+verify-module:
+	@echo "--> Validating terraform module"
+	@act -j code-validate
+
+verify-format:
+	@echo "--> Formatting terraform module"
+	@act -j code-format
+
+act:
+	@act --version >/dev/null 2>&1 || (echo "ERROR: act is required. (https://github.com/nektos/act)"; exit 1)
+	@act -g
 
 controller-kind:
 	@echo "--> Creating Kubernetes Cluster"
