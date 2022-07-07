@@ -21,6 +21,11 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+env:
+  ENABLE_COMMIT_LINTING: 'false'
+  POLICY_SOURCE: ''
+  POLICY_VERSION: ''
+
 jobs:
   code-linting:
     name: Linting Code
@@ -110,12 +115,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       security: ${{ steps.security.outcome }}
-    env:
-      # Change this reference to link to you organizations policies
-      # repository
-      POLICY_SOURCE: ""
-      # Change this reference to link to the policy tag
-      POLICY_VERSION: ""
     steps:
       - name: Clone repo
         uses: actions/checkout@v3
@@ -216,8 +215,6 @@ jobs:
   code-commits:
     name: Lint Code Commits
     runs-on: ubuntu-latest
-    env:
-      ENABLE_COMMIT_LINTING: "false"
     steps:
       - name: Clone repo
         if: "${{ env.ENABLE_COMMIT_LINTING == 'true' }}"
