@@ -140,6 +140,7 @@ jobs:
         id: security
         uses: bridgecrewio/checkov-action@master
         with:
+          download_external_modules: true
           framework: terraform
 
   cost-token:
