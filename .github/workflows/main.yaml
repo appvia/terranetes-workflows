@@ -24,7 +24,7 @@ on:
 env:
   ENABLE_COMMIT_LINTING: 'false'
   POLICY_SOURCE: ''
-  POLICY_VERSION: ''
+  POLICY_VERSION: main
 
 jobs:
   code-linting:
@@ -118,30 +118,14 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@v3
-      - name: Cloning Organizational Policies
-        if: "${{ env.POLICY_SOURCE != '' }}"
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ env.POLICY_SOURCE }}
-          token: ${{ secrets.policy_token }}
-          path: policy/
-      - name: Checkout Organizational Version
-        if: "${{ env.POLICY_SOURCE != '' && env.POLICY_VERSION != '' }}"
-        run: |
-          cd policy
-          latest=$(git describe --tags --abbrev=0)
-          git checkout $latest
-      - name: Checkov Configuration
-        run: |
-          if [[ -f policy/checkov.yaml ]]; then
-            cp policy/checkov.yaml .checkov.yaml
-          fi
-      - name: Running Checkov
+      - name: Security Policy
         id: security
-        uses: bridgecrewio/checkov-action@master
+        uses: appvia/terranetes-policy-action@v1
         with:
-          download_external_modules: true
-          framework: terraform
+          directory: "."
+          policy_ssh_key: "${{ secrets.policy_token }}"
+          policy_url: "${{ env.POLICY_SOURCE }}"
+          policy_version: "${{ env.POLICY_VERSION }}"
 
   cost-token:
     name: Check Costs Enabled
