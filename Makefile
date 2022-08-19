@@ -39,7 +39,7 @@ format:
 
 verify-security:
 	@echo "--> Verifying against security policies"
-	@act -j code-security
+	@act -s GITHUB_TOKEN=${GITHUB_TOKEN} -j code-security
 
 verify-docs:
 	@echo "--> Generating documentation"
