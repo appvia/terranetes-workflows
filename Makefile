@@ -64,9 +64,9 @@ controller-kind:
 	@kubectl version --client >/dev/null 2>&1 || (echo "ERROR: kubectl is required."; exit 1)
 	@kind create cluster || true
 	@echo "--> Adding Terranetes Helm Repository"
-	@helm repo add appvia https://terraform-controller.appvia.io
-	@echo "--> Deploying Terraform Controller"
-	@helm upgrade -n terraform-system terraform-controller appvia/terraform-controller --create-namespace --install
+	@helm repo add appvia https://terranetes-controller.appvia.io
+	@echo "--> Deploying Terranetes Controller"
+	@helm upgrade -n terraform-system terranetes-controller appvia/terranetes-controller --install --create-namespace
 	@echo "--> Terranetes Controller is available, please configure credentials"
-	@echo "--> Documentation: https://terranetes.appvia.io/terraform-controller/category/administration/"
+	@echo "--> Documentation: https://terranetes.appvia.io/terranetes-controller/category/administration/"
 	@kubectl -n terraform-system get deployment
