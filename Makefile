@@ -20,6 +20,7 @@ UID=$(shell id -u)
 
 test: act
 	@echo "--> Testing the module"
+	@$(MAKE) verify-linting
 	@$(MAKE) verify-module
 	@$(MAKE) verify-format
 	@$(MAKE) verify-security
@@ -36,6 +37,10 @@ docs:
 format:
 	@echo "--> Formatting terraform module"
 	@terraform fmt
+
+verify-linting:
+	@echo "--> Verifying code linting"
+	@act -j code-linting
 
 verify-security:
 	@echo "--> Verifying against security policies"
