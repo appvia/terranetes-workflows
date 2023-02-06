@@ -108,6 +108,7 @@ jobs:
         run: |
           if ! git status | grep -q README; then
             echo "Ensure documentation is up to date $ make docs"
+            exit 1
           fi
 
   code-security:
