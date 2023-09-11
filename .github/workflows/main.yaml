@@ -38,7 +38,7 @@ jobs:
       linting: ${{ steps.linting.outcome }}
     steps:
       - name: Clone repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
       - name: Setup Linter
@@ -58,7 +58,7 @@ jobs:
       validate: ${{ steps.validate.outcome }}
     steps:
       - name: Clone repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
       - name: Terraform Initialize
@@ -74,7 +74,7 @@ jobs:
       format: ${{ steps.format.outcome }}
     steps:
       - name: Clone repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
       - name: Format Check
@@ -91,7 +91,7 @@ jobs:
       VERSION: v0.16.0
     steps:
       - name: Clone repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Terraform Documentation CLI
         run: |
           curl -sL ${{ env.RELEASE }}/${{ env.VERSION }}/terraform-docs-${{ env.VERSION }}-$(uname)-amd64.tar.gz -o cli.tar.gz
@@ -118,7 +118,7 @@ jobs:
       security: ${{ steps.security.outcome }}
     steps:
       - name: Clone repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Security Policy
         id: security
         uses: appvia/terranetes-policy-action@v1
@@ -151,13 +151,13 @@ jobs:
       TF_ROOT: .
     steps:
       - name: Clone repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Infracost
         uses: infracost/actions/setup@v2
         with:
           api-key: ${{ secrets.ORG_INFRACOST_API_KEY }}
       - name: Checkout base branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: '${{ github.event.pull_request.base.ref }}'
       - name: Checking for baseline files
@@ -175,7 +175,7 @@ jobs:
             --format=json \
             --out-file=/tmp/infracost-base.json
       - name: Checkout PR branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Generate Infracost diff
         if: steps.baseline.outputs.exists == 'true'
         run: |
@@ -204,7 +204,7 @@ jobs:
     steps:
       - name: Clone repo
         if: "${{ env.ENABLE_COMMIT_LINTING == 'true' }}"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Checking Commits
