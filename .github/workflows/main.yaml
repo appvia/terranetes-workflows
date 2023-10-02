@@ -42,7 +42,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
       - name: Setup Linter
-        uses: terraform-linters/setup-tflint@v3
+        uses: terraform-linters/setup-tflint@v4
       - name: Linter Version
         run: tflint --version
       - name: Linter Initialize
