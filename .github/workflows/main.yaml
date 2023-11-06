@@ -40,7 +40,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v3
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
       - name: Setup Linter
         uses: terraform-linters/setup-tflint@v3
       - name: Linter Version
@@ -60,7 +60,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v3
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
       - name: Terraform Initialize
         run: terraform init
       - name: Terraform Validate
@@ -76,7 +76,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v3
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
       - name: Format Check
         id: format
         uses: dflook/terraform-fmt-check@v1
